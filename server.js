@@ -48,9 +48,11 @@ app.use(express.json())
 //Import Route
 const indexRoute = require('./routes/index')
 const authorRoute = require('./routes/authors')
+const bookRoute = require('./routes/books')
 
 //Route middlewares
 app.use('/', indexRoute)
 app.use('/authors',authorRoute)
+app.use('/books',bookRoute)
 
 app.listen(process.env.PORT || 3000)

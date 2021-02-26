@@ -3,10 +3,21 @@ const router = express.Router()
 const bcrypt = require('bcrypt')
 const User = require('../models/User')
 const passport = require('passport')
+const Book = require('../models/book')
 
 
-router.get('/',checkAuthenticated,(req,res)=> {
-    res.render('index.ejs',{name: req.user.name})
+router.get('/homepage',checkAuthenticated,(req,res)=> {
+    res.render('homepage.ejs',{name: req.user.name})
+})
+
+router.get('/',checkNotAuthenticated, async (req,res)=> {
+    let books
+    try{
+        books = await Book.find().sort({createdAt: 'desc' }).limit(10).exec()
+    } catch{
+        books = []
+    }
+    res.render('index.ejs', {books: books})
 })
 
 router.get('/login',checkNotAuthenticated,(req,res)=>{
@@ -14,8 +25,8 @@ router.get('/login',checkNotAuthenticated,(req,res)=>{
 })
 
 router.post('/login',checkNotAuthenticated, passport.authenticate('local',{
-    successRedirect: '/',
-    failureRedirect: '/login',
+    successRedirect: '/homepage',
+    failureRedirect: '/',
     failureFlash: true
 }))
 
@@ -23,7 +34,7 @@ router.get('/register',checkNotAuthenticated,(req,res)=>{
     res.render('register.ejs')
 })
 
-router.post('/register',checkNotAuthenticated, async (req,res)=>{
+router.post('/index/register',checkNotAuthenticated, async (req,res)=>{
     try{
         const hashedPassword = await bcrypt.hash(req.body.password, 10)
         const user = new User({
@@ -40,19 +51,19 @@ router.post('/register',checkNotAuthenticated, async (req,res)=>{
 
 router.delete('/logout',(req,res)=>{
     req.logOut()
-    res.redirect('/login')
+    res.redirect('/')
 })
 
 function checkAuthenticated(req,res,next){
     if(req.isAuthenticated()){
         return next()
     }
-    res.redirect('/login')
+    res.redirect('/')
 }
 
 function checkNotAuthenticated(req,res,next){
     if(req.isAuthenticated()){
-        return res.redirect('/')
+        return res.redirect('/homepage')
     }
     next()
 }
