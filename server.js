@@ -3,6 +3,7 @@ if(process.env.NODE_ENV !== 'production'){
 }
 
 const express = require('express')
+const expressLayouts = require('express-ejs-layouts')
 const mongoose = require('mongoose')
 const passport = require('passport')
 const flash = require('express-flash')
@@ -13,6 +14,10 @@ const app = express()
 require('./passport-config')(passport)
 
 app.set('view-engine', 'ejs')
+app.set('views', __dirname + '/views')
+app.set('layout', 'layouts/layouts')
+app.use(expressLayouts)
+app.use(express.static('public'))
 app.use(express.urlencoded({ extended:false }))
 app.use(flash())
 app.use(session({
@@ -30,6 +35,9 @@ mongoose.connect(
     process.env.DB_CONNECT,
     { useNewUrlParser: true, useUnifiedTopology: true }
 )
+const db = mongoose.connection
+db.on('error', error => console.error(error))
+db.once('open', ()=> console.log('Connected to DB'))
 
 //middleware
 app.use(express.json())
