@@ -40,7 +40,7 @@ router.get('/register',checkNotAuthenticated,(req,res)=>{
     res.render('register.ejs')
 })
 
-router.post('/index/register',checkNotAuthenticated, async (req,res)=>{
+router.post('/register',checkNotAuthenticated, async (req,res)=>{
     try{
         const hashedPassword = await bcrypt.hash(req.body.password, 10)
         const user = new User({
