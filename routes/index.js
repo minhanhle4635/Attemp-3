@@ -6,8 +6,14 @@ const passport = require('passport')
 const Book = require('../models/book')
 
 
-router.get('/homepage',checkAuthenticated,(req,res)=> {
-    res.render('homepage.ejs',{name: req.user.name})
+router.get('/homepage',checkAuthenticated, async (req,res)=> {
+    let books 
+    try{
+        books = await Book.find().sort({createdAt:'desc'}).limit(10).exec()
+    }catch{
+        books = []
+    }
+    res.render('homepage.ejs',{name: req.user.name, books: books})
 })
 
 router.get('/',checkNotAuthenticated, async (req,res)=> {
