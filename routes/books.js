@@ -62,17 +62,17 @@ router.get('/:id', async (req,res)=>{
 })
 
 //edit book route
-router.get('/:id/edit', async (req,res)=>{
+router.get('/:id/edit', checkAuthenticated, async (req,res)=>{
     try{
         const book = await Book.findById(req.params.id)
         renderEditPage(res, book)
     } catch {
-        res.redirect('/homepage')
+        res.redirect('/:id')
     }    
 })
 
 //Update book route
-router.put('/:id',async (req,res)=>{
+router.put('/:id', checkAuthenticated, async (req,res)=>{
    let book
     try{
         book = await Book.findById(req.params.id)
@@ -91,13 +91,13 @@ router.put('/:id',async (req,res)=>{
         {
             renderEditPage(res, book, true)
         } else {
-            res.redirect('/homepage')
+            res.redirect('/:id')
         }
     }
 })
 
 //Delete book page
-router.delete('/:id', async (req,res)=>{
+router.delete('/:id', checkAuthenticated,async (req,res)=>{
     let book
     try{
         book = await Book.findById(req.params.id)
@@ -110,7 +110,7 @@ router.delete('/:id', async (req,res)=>{
                 errorMessage: 'Could not delete the book'
             })
         } else {
-            res.redirect('/homepage')
+            res.redirect('/:id')
         }
     }
 })
@@ -158,5 +158,6 @@ function checkAuthenticated(req,res,next){
     }
     res.redirect('/')
 }
+
 
 module.exports = router

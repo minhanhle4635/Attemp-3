@@ -30,27 +30,38 @@ router.get('/login',checkNotAuthenticated,(req,res)=>{
     res.render('login.ejs')
 })
 
-router.post('/login',checkNotAuthenticated, passport.authenticate('local',{
-    successRedirect: '/homepage',
-    failureRedirect: '/',
-    failureFlash: true
-}))
+router.post('/login',checkNotAuthenticated, (req,res,next)=>{
+    passport.authenticate('local',{
+        successRedirect: '/homepage',
+        failureRedirect: '/login',
+        failureFlash: true
+    }) (req,res,next)
+})
 
 router.get('/register',checkNotAuthenticated,(req,res)=>{
     res.render('register.ejs')
 })
 
-router.post('/index/register',checkNotAuthenticated, async (req,res)=>{
+router.post('/register',checkNotAuthenticated, async (req,res)=>{
+    
     try{
+        const similarEmail = await User.findOne({email: req.body.email})
         const hashedPassword = await bcrypt.hash(req.body.password, 10)
         const user = new User({
             name: req.body.name,
             email: req.body.email,
             password: hashedPassword
         })
-        await user.save()
-        res.redirect('/login')
-    }catch{
+        if(user.email != similarEmail){
+            await user.save()
+            res.redirect('/login')
+        } else {
+            res.render('/register',{
+                errorMessage: 'Email has been used'
+            })
+        }
+    }catch(e){
+        console.log(e)
         res.redirect('/register')
     }
 })

@@ -3,6 +3,7 @@ if(process.env.NODE_ENV !== 'production'){
 }
 
 const express = require('express')
+const app = express()
 const expressLayouts = require('express-ejs-layouts')
 const bodyParser = require('body-parser')
 const mongoose = require('mongoose')
@@ -10,8 +11,8 @@ const passport = require('passport')
 const flash = require('express-flash')
 const session = require('express-session')
 const methodOverride = require('method-override')
-const app = express()
 
+//passport config
 require('./passport-config')(passport)
 
 app.set('view engine', 'ejs')
@@ -22,16 +23,18 @@ app.use(express.static('public'))
 app.use(bodyParser.urlencoded({ limit: '10mb', extended: false}))
 
 app.use(express.urlencoded({ extended:false }))
-app.use(flash())
 app.use(session({
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false
 }))
-app.use(methodOverride('_method'))
-
+//Passport middleware
 app.use(passport.initialize())
 app.use(passport.session())
+
+app.use(flash())
+
+app.use(methodOverride('_method'))
 
 //connect DB
 mongoose.connect(
