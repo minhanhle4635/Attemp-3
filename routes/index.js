@@ -42,8 +42,7 @@ router.get('/register',checkNotAuthenticated,(req,res)=>{
     res.render('register.ejs')
 })
 
-router.post('/register',checkNotAuthenticated, async (req,res)=>{
-    
+router.post('/register',checkNotAuthenticated, async (req,res)=>{    
     try{
         const similarEmail = await User.findOne({email: req.body.email})
         const hashedPassword = await bcrypt.hash(req.body.password, 10)
