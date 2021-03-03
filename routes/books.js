@@ -1,8 +1,22 @@
 const express = require('express')
 const router = express.Router()
+// const multer = require('multer')
+// const path = require('path')
 const Book = require('../models/book')
 const Author = require('../models/author')
+// const uploadPath = path.join('public', Book.fileBasePath)
 const imageMimeTypes = ['image/jpeg','image/png','images/gif']
+const fileMimeTypes = ['application/msword', 'application/pdf']
+// const storage = multer.diskStorage({
+//     destination: function(req,file,callback){
+//         callback(null,'./public/uploads/files')
+//     },
+//     filename: (req, file, callback) => {
+//         callback(null, file.originalname)
+//     }
+// })
+
+// var upload = multer({ storage: storage })
 
 //All books route
 router.get('/', async (req,res) =>{
@@ -32,6 +46,8 @@ router.get('/new', checkAuthenticated,async (req, res)=>{
     renderNewPage(res, new Book())
 })
 
+
+
 //Create new book
 router.post('/', checkAuthenticated, async (req,res) => {
     const book = new Book({
@@ -41,7 +57,7 @@ router.post('/', checkAuthenticated, async (req,res) => {
         description: req.body.description
     })
     saveCover(book, req.body.cover)
-
+    saveFile(book, req.body.file)
     try{
         const newBook = await book.save()
         res.redirect(`books/${newBook.id}`)
@@ -56,10 +72,25 @@ router.get('/:id', async (req,res)=>{
         const book = await Book.findById(req.params.id).populate('author').exec()
         res.render('books/show',{book: book})
 
-    } catch{
+    } catch (err){
+        console.log(err)
         res.redirect('/homepage')
     }
 })
+
+
+// //download book route
+// router.get('/:id/download', (req,res)=>{  
+//     Book.find({ _id : req.params.id },(err,data)=>{  
+//         if(err){  
+//             console.log(err)  
+//         }   
+//         else{
+//             var path = __dirname + '/public/'+ book.filePath
+//             res.download(path)
+//         }  
+//     })  
+// })  
 
 //edit book route
 router.get('/:id/edit', checkAuthenticated, async (req,res)=>{
@@ -149,6 +180,15 @@ function saveCover(book, coverEncoded){
     if (cover != null && imageMimeTypes.includes(cover.type)){
         book.coverImage = new Buffer.from(cover.data, 'base64')
         book.coverImageType = cover.type
+    }
+}
+
+function saveFile(book, fileEncoded){
+    if(fileEncoded == null) return 
+    const file = JSON.parse(fileEncoded)
+    if (file != null && fileMimeTypes.includes(file.type)){
+        book.file = new Buffer.from(file.data, 'base64')
+        book.fileType = file.type
     }
 }
 

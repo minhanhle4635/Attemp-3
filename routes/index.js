@@ -44,23 +44,22 @@ router.get('/register',checkNotAuthenticated,(req,res)=>{
 
 router.post('/register',checkNotAuthenticated, async (req,res)=>{    
     try{
-        const similarEmail = await User.findOne({email: req.body.email})
+        const existedUser = await User.findOne({email: req.body.email})
         const hashedPassword = await bcrypt.hash(req.body.password, 10)
         const user = new User({
             name: req.body.name,
             email: req.body.email,
             password: hashedPassword
         })
-        if(user.email != similarEmail){
+        if(existedUser == null ){
             await user.save()
             res.redirect('/login')
         } else {
-            res.render('/register',{
+            res.render('register',{
                 errorMessage: 'Email has been used'
             })
         }
-    }catch(e){
-        console.log(e)
+    }catch{
         res.redirect('/register')
     }
 })

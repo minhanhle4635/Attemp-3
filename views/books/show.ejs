@@ -11,5 +11,9 @@
 
 <div> Description: <%= book.description %> </div>
 
-<a href="/books/<%= book.id %>/edit">Edit</a>
+<div>File: <%= book.fileName %>
+    <a href="<%= book.filePath %>" download="<%= book.title %>">Download</a>
+</div>
+
+<a href="/books/<%= book._id %>/edit">Edit</a>
 <%- include('../partials/deleteForm', {url: `/books/${book.id}`})%>

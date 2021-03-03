@@ -15,13 +15,16 @@ const methodOverride = require('method-override')
 //passport config
 require('./passport-config')(passport)
 
+//middleware
+app.use(express.json({limit: '50mb'}))
+app.use(bodyParser.json())
 app.set('view engine', 'ejs')
 app.set('views', __dirname + '/views')
+
 app.set('layout', 'layouts/layout')
 app.use(expressLayouts)
 app.use(express.static('public'))
-app.use(bodyParser.urlencoded({ limit: '10mb', extended: false}))
-
+app.use(bodyParser.urlencoded({ limit: '50mb', extended: false}))
 app.use(express.urlencoded({ extended:false }))
 app.use(session({
     secret: process.env.SESSION_SECRET,
@@ -36,6 +39,16 @@ app.use(flash())
 
 app.use(methodOverride('_method'))
 
+app.use((req, res, next) => {
+    res.locals.isAuthenticated = req.isAuthenticated()
+    next()
+})
+
+app.use((req, res, next) => {
+    res.locals.currentUser = req.user
+    next()
+})
+
 //connect DB
 mongoose.connect(
     process.env.DB_CONNECT,
@@ -44,9 +57,6 @@ mongoose.connect(
 const db = mongoose.connection
 db.on('error', error => console.error(error))
 db.once('open', ()=> console.log('Connected to DB'))
-
-//middleware
-app.use(express.json())
 
 //Import Route
 const indexRoute = require('./routes/index')
